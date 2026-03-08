@@ -1,0 +1,34 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Assignment-1 on Arrays
+      id: assignment-1-on-arrays
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Assignment-1 on Arrays
+        setup-command: javac Assignment1.java
+        command: javac Assignment1.java; output=$(java Assignment1 | tr -d '\r' |
+          tr '\n' ' ' | sed 's/ $//'); expected="2000 2004 2008 2012 2016 2020 2024
+          2028 2032 2036 2040 2044 2048 2052 2056"; if [ "$output" = "$expected" ];
+          then echo "Test Passed"; exit 0; else echo "Test Failed"; echo "Expected:";
+          echo "$expected"; echo "Got:"; echo "$output"; exit 1; fi
+        timeout: 15
+        max-score: 10
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        ASSIGNMENT-1-ON-ARRAYS_RESULTS: "${{steps.assignment-1-on-arrays.outputs.result}}"
+      with:
+        runners: assignment-1-on-arrays
